@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,7 +10,7 @@ import menuData from "./menuData";
 
 const Header = () => {
   const [navigationOpen, setNavigationOpen] = useState(false);
-  const [dropdownToggler, setDropdownToggler] = useState(false);
+  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
   const [stickyMenu, setStickyMenu] = useState(false);
   const pathUrl = usePathname();
 
@@ -17,113 +18,111 @@ const Header = () => {
     const handleStickyMenu = () => {
       setStickyMenu(window.scrollY >= 80);
     };
-
     window.addEventListener("scroll", handleStickyMenu);
     return () => window.removeEventListener("scroll", handleStickyMenu);
   }, []);
 
+  const toggleDropdown = (index: number) => {
+    if (openDropdownIndex === index) {
+      setOpenDropdownIndex(null);
+    } else {
+      setOpenDropdownIndex(index);
+    }
+  };
+
   return (
     <header
-      className={`fixed left-0 top-0 z-99999 w-full py-7 ${
+      className={`fixed left-0 top-0 z-[99999] w-full transition-all ${
         stickyMenu
-          ? "bg-white !py-4 shadow transition duration-100 dark:bg-black"
-          : ""
+          ? "bg-white py-4 shadow dark:bg-black"
+          : "py-7"
       }`}
     >
-      <div className="relative mx-auto max-w-c-1390 items-center justify-between px-4 md:px-8 xl:flex 2xl:px-0">
-        <div className="flex w-full items-center justify-between xl:w-1/4">
-          <a href="/" className="relative flex h-[30px] w-[119px] items-center">
-            <Image
-              src="/images/logo/logo-dark.png"
-              alt="logo"
-              layout="fill"
-              objectFit="contain"
-              className="hidden dark:block"
-            />
+      <div className="relative mx-auto flex max-w-[1390px] items-center justify-between px-4 md:px-8 2xl:px-0">
+        {/* Logo Section */}
+        <div className="flex items-center justify-between w-full xl:w-1/4">
+          <Link href="/" className="relative flex h-[30px] w-[119px] items-center">
             <Image
               src="/images/logo/logo-light.png"
               alt="logo"
-              layout="fill"
-              objectFit="contain"
-              className="dark:hidden"
+              fill
+              className="block dark:hidden object-contain"
             />
-          </a>
+            <Image
+              src="/images/logo/logo-dark.png"
+              alt="logo"
+              fill
+              className="hidden dark:block object-contain"
+            />
+          </Link>
 
-          {/* Hamburger Toggle BTN */}
+          {/* Hamburger Button */}
           <button
-            aria-label="hamburger Toggler"
+            aria-label="Toggle Menu"
             className="block xl:hidden"
             onClick={() => setNavigationOpen(!navigationOpen)}
           >
-            <span className="relative block h-5.5 w-5.5 cursor-pointer">
-              <span className="absolute right-0 block h-full w-full">
-                {[0, 1, 2].map((_, i) => (
-                  <span
-                    key={i}
-                    className={`relative left-0 top-0 my-1 block h-0.5 rounded-sm bg-black delay-${i *
-                      150} duration-200 ease-in-out dark:bg-white ${
-                      !navigationOpen ? `!w-full delay-${300 + i * 100}` : "w-0"
-                    }`}
-                  ></span>
-                ))}
-              </span>
-              <span className="du-block absolute right-0 h-full w-full rotate-45">
-                <span
-                  className={`absolute left-2.5 top-0 block h-full w-0.5 rounded-sm bg-black delay-300 duration-200 ease-in-out dark:bg-white ${
-                    !navigationOpen ? "!h-0 delay-[0]" : "h-full"
-                  }`}
-                ></span>
-                <span
-                  className={`delay-400 absolute left-0 top-2.5 block h-0.5 w-full rounded-sm bg-black duration-200 ease-in-out dark:bg-white ${
-                    !navigationOpen ? "!h-0 delay-200" : "h-0.5"
-                  }`}
-                ></span>
-              </span>
-            </span>
+            <div className="relative h-6 w-6">
+              <span
+                className={`absolute block h-0.5 w-full bg-black dark:bg-white transition-all duration-300 ${
+                  navigationOpen ? "top-1/2 rotate-45" : "top-1"
+                }`}
+              ></span>
+              <span
+                className={`absolute block h-0.5 w-full bg-black dark:bg-white transition-all duration-300 ${
+                  navigationOpen ? "opacity-0" : "top-1/2"
+                }`}
+              ></span>
+              <span
+                className={`absolute block h-0.5 w-full bg-black dark:bg-white transition-all duration-300 ${
+                  navigationOpen ? "top-1/2 -rotate-45" : "bottom-1"
+                }`}
+              ></span>
+            </div>
           </button>
         </div>
 
-        {/* Nav Menu */}
+        {/* Navigation Menu */}
         <div
-          className={`invisible h-0 w-full items-center justify-between xl:visible xl:flex xl:h-auto xl:w-full ${
-            navigationOpen &&
-            "navbar !visible mt-4 h-auto max-h-[400px] rounded-md bg-white p-7.5 shadow-solid-5 dark:bg-blacksection xl:h-auto xl:p-0 xl:shadow-none xl:dark:bg-transparent"
+          className={`xl:flex xl:items-center xl:justify-between xl:visible xl:h-auto xl:w-full ${
+            navigationOpen
+              ? "visible mt-4 h-auto w-full rounded-md bg-white p-7.5 shadow dark:bg-blacksection"
+              : "invisible h-0 w-0"
           }`}
         >
-          <nav>
-            <ul className="xl:justify-content flex flex-col gap-5 xl:flex-row xl:gap-10">
-              {menuData.map((menuItem, key) => (
-                <li key={key} className={menuItem.submenu && "group relative"}>
+          <nav className="w-full">
+            <ul className="flex flex-col gap-5 xl:flex-row xl:gap-10">
+              {menuData.map((menuItem, index) => (
+                <li key={index} className={menuItem.submenu ? "relative group" : ""}>
                   {menuItem.submenu ? (
                     <>
                       <button
-                        onClick={() => setDropdownToggler(!dropdownToggler)}
-                        className="flex cursor-pointer items-center justify-between gap-3 hover:text-primary"
+                        onClick={() => toggleDropdown(index)}
+                        className="flex items-center gap-2 hover:text-primary"
                       >
                         {menuItem.title}
                         <svg
-                          className="h-3 w-3 cursor-pointer fill-waterloo group-hover:fill-primary"
+                          className="h-3 w-3 fill-current"
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 512 512"
                         >
                           <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
                         </svg>
                       </button>
+
+                      {/* Dropdown */}
                       <ul
-                        className={`dropdown ${
-                          dropdownToggler ? "block" : "hidden"
-                        } absolute left-0 mt-2 w-64 divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white shadow-xl dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800`}
+                        className={`absolute left-0 mt-2 w-64 rounded-lg border bg-white shadow dark:bg-gray-800 dark:border-gray-700 ${
+                          openDropdownIndex === index ? "block" : "hidden"
+                        }`}
                       >
-                        {menuItem.submenu.map((item, i) => (
-                          <li
-                            key={i}
-                            className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                          >
+                        {menuItem.submenu.map((item, subIndex) => (
+                          <li key={subIndex} className="hover:bg-gray-100 dark:hover:bg-gray-700">
                             <Link
                               href={item.path}
-                              className="block px-5 py-3.5 hover:text-primary"
+                              className="block px-5 py-3.5"
                             >
-                              <div className="space-y-1">
+                              <div>
                                 <p className="font-semibold text-gray-900 dark:text-white">
                                   {item.title}
                                 </p>
@@ -141,11 +140,9 @@ const Header = () => {
                   ) : (
                     <Link
                       href={menuItem.path}
-                      className={
-                        pathUrl === menuItem.path
-                          ? "text-primary hover:text-primary"
-                          : "hover:text-primary"
-                      }
+                      className={`hover:text-primary ${
+                        pathUrl === menuItem.path ? "text-primary" : ""
+                      }`}
                     >
                       {menuItem.title}
                     </Link>
@@ -155,11 +152,12 @@ const Header = () => {
             </ul>
           </nav>
 
+          {/* Theme Toggler & Sign In */}
           <div className="mt-7 flex items-center gap-6 xl:mt-0">
             <ThemeToggler />
             <Link
               href="https://app.fincorpx.in/login"
-              className="flex items-center justify-center rounded-full bg-primary px-7.5 py-2.5 text-regular text-white duration-300 ease-in-out hover:bg-primaryho"
+              className="rounded-full bg-primary px-7.5 py-2.5 text-white hover:bg-primaryho transition-all"
             >
               Sign in
             </Link>
