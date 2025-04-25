@@ -15,13 +15,13 @@ const Feature = () => {
             headerInfo={{
               title: "SOLID FEATURES",
               subtitle: "Everything You Need to Stay Financially Ahead",
+              description: "", // ✅ Add this line or a real description
             }}
           />
           {/* <!-- Section Title End --> */}
 
           <div className="mt-12.5 grid grid-cols-1 gap-7.5 md:grid-cols-2 lg:mt-15 lg:grid-cols-3 xl:mt-20 xl:gap-12.5">
             {/* <!-- Features item Start --> */}
-
             {featuresData.map((feature, key) => (
               <SingleFeature feature={feature} key={key} />
             ))}
@@ -29,10 +29,10 @@ const Feature = () => {
           </div>
         </div>
       </section>
-
       {/* <!-- ===== Features End ===== --> */}
     </>
   );
 };
 
 export default Feature;
+
